@@ -175,7 +175,38 @@ class AliOssAdapter extends AbstractAdapter
      */
     public function writeStream($path, $resource, Config $config)
     {
-        return $this->writeFile($path, $resource, $config);
+        if (! is_resource($resource)) {
+            return false;
+        }
+
+        $filename = null;
+        $tmp = null;
+        if (stream_is_local($resource)) {
+            $filename = stream_get_meta_data($resource)['uri'];
+
+        } else {
+            $tmp = tempnam(sys_get_temp_dir(), 'ali-oss-adapter-');
+            $tmpFile = fopen($filename, 'a+');
+            if (! $tmpFile) {
+                return false;
+            }
+
+            for(; !foeof($resource) ;) {
+                $buf = fread($resource, 10240);
+                fwrite($tmpFile, $buf);
+            }
+            fclose($tmpFile);
+
+            $filename = $tmp;
+        }
+
+        $ret = $this->writeFile($path, $filename, $config);
+
+        if ($tmp) {
+            unlink($tmp);
+        }
+
+        return $ret;
     }
 
     public function writeFile($path, $filePath, Config $config){
