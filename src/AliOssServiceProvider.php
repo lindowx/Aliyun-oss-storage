@@ -48,7 +48,6 @@ class AliOssServiceProvider extends ServiceProvider
             $client  = new OssClient($accessId, $accessKey, $epInternal, $isCname);
             $adapter = new AliOssAdapter($client, $bucket, $endPoint, $ssl, $isCname, $debug, $cdnDomain);
 
-            //Log::debug($client);
             $filesystem =  new Filesystem($adapter);
             
             $filesystem->addPlugin(new PutFile());
